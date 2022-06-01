@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputPath>R:\VisualStudioBuilds\$(AssemblyName)\bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Allegro" Version="5.2.7.1"/>
+    <PackageReference Include="NCurses" Version="1.2.0"/>
+  </ItemGroup>
+</Project>
