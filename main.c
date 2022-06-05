@@ -36,8 +36,86 @@ int plansza(){
     return 0;
 }
 
+int menu()
+{
+    initscr();
+    noecho();
+    curs_set(0);
+    cbreak();
+    int height=40;
+    int width=55;
+    int start_x = 0;
+    int start_y=0;
+    
+    //printing menu options
+    WINDOW * menuwin = newwin(height, width, start_x, start_y);
+    box(menuwin, 0, 0);
+    keypad(menuwin, true);
+    refresh();
+    wrefresh(menuwin);
+    mvwprintw(menuwin, 0, 16, " * * * PAC - MAN * * * ");
+    int highscore=0;
+    char username[]="anon";
+    mvwprintw(menuwin, 2, 2, "Highscore: %d", highscore);
+    mvwprintw(menuwin, 3, 2, "Player: %s", username);
+    int menuy=15;
+    int menux=20;
+    char opt1[] = "CHANGE NICKNAME ";
+    char opt2[] = "PLAY ";
+    char opt3[] = "HIGH SCORES ";
+    
+    
+    int choice;
+    int highlight = menuy;
+    move(menuy, menux-1);
+    while(1){
+        mvwprintw(menuwin, menuy, menux, "%s", opt1);
+        mvwprintw(menuwin, menuy+1, menux, opt2);
+        mvwprintw(menuwin, menuy+2, menux, "%s", opt3);
+        if(highlight == menuy){
+            wattron(menuwin, A_STANDOUT);
+            mvwprintw(menuwin, menuy, menux, "%s", opt1);
+            wattroff(menuwin, A_STANDOUT);
+        }else if(highlight == menuy+1){
+            wattron(menuwin, A_STANDOUT);
+            mvwprintw(menuwin, menuy+1, menux, "%s", opt2);
+            wattroff(menuwin, A_STANDOUT);
+        }else if(highlight == menuy+2){
+            wattron(menuwin, A_STANDOUT);
+            mvwprintw(menuwin, menuy+2, menux, "%s", opt3);
+            wattroff(menuwin, A_STANDOUT);
+        }
+        choice=wgetch(menuwin);
+        switch (choice)
+        {
+        case KEY_UP:
+            if (highlight == menuy) highlight = highlight+2;
+            else highlight--;
+            break;
+        case KEY_DOWN:
+            if (highlight == 17) highlight = highlight-2;
+            else highlight++;
+            break;
+        default:
+            break;
+        }
+    
+        wrefresh(menuwin);
+        if (choice == 10) break;
+    }
+
+    getch(); //wait for user's input (return int of char)
+    refresh(); //refresh screen to match the memory
+
+
+    endwin(); //zamknij ncurses  
+    return 0;
+}
+
 int main()
 {
+
+    //menu();
 
     FILE* mapFile;
 
@@ -62,7 +140,7 @@ int main()
         readX = 0;
         readY++;
       } else {  
-        if((c >= '1' && c <= '9') || c == 'X') {
+        if((c >= '0' && c <= '9') || c == 'X') {
           mapC[readX][readY] = 1;
         }
         map[readX][readY] = c; 
@@ -163,18 +241,35 @@ int main()
         }
 
         /* BEGIN DRAWING */
+        curs_set(0);
+        init_pair(2, COLOR_YELLOW, COLOR_BLACK);
         move(0, 0);
         plansza();
         wrefresh(win);
+        attron(COLOR_PAIR(2));
         mvwprintw(win, y, x, "●"); //ᗣ
+        attroff(COLOR_PAIR(2));
         wmove(win,y,x);
-        if(x<=0 || x>=width || y<=0 || y>=height){
-          if((x <= 0 || x >= width) && y == 14) {
-            x = 55 - x; //loop
-          } else {
-            break;
+
+
+      /* Portal */
+        if (y==14){
+          if (x<=0){
+          x = 55-x;
+          } else if ((x>=54) && attemptedX==1){
+            x = 0;
           }
         }
+        
+        
+        
+        // if(x<=0 || x>=width || y<=0 || y>=height){
+        //   if((x <= 0 || x >= width) && y == 14) {
+        //     x = 55 - x; //loop
+        //   } else {
+        //     break;
+        //   }
+        // }
 
         /* Hold the frame until we reach set amount of FPS */
         while(true) {
