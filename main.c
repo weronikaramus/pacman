@@ -110,13 +110,13 @@ int menu()
         {
         case KEY_UP:
             if(currentChoice == 0)
-              currentChoice + (4 - 1);
+              currentChoice += (4 - 1);
             else
               currentChoice--;
             break;
         case KEY_DOWN:
             if(currentChoice == (4 - 1))
-              currentChoice - (4 - 1);
+              currentChoice -= (4 - 1);
             else
               currentChoice++;            
             break;
@@ -216,9 +216,9 @@ void mainGame() {
           move(0, 0);
           plansza();
           wrefresh(win);
-          attron(COLOR_PAIR(2));
+          wattron(win, COLOR_PAIR(2));
           mvwprintw(win, y, x, "●"); //ᗣ?
-          attroff(COLOR_PAIR(2));
+          wattroff(win, COLOR_PAIR(2));
           wmove(win,y,x);
 
 

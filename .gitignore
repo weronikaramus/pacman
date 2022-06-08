@@ -1,4 +1,4 @@
 #pliki Mac
-DS_store
-
+.DS_store
+.vscode
 out
