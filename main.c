@@ -4,14 +4,16 @@
 #include <stdio.h>
 #include <wchar.h>
 
-    char map[55][31];
-    int mapC[55][31] = { 0 };
+#define MENU_CHOICE_AMT 4
+
+    char map[55][31]; //ustawiamy rozmiar planszy
+    int mapC[55][31] = { 0 };  //ustawiamy rozmiar planszy z kolizjami
 
 char* blockTypes[] = {"-",  "║", "═", "╚", "╗", "╝", "╔", "╣", "╠", "╦"};
 
 double desiredFPS = 6.0; //jeżeli gra będzie za wolna to możemy sobie zwiększyć
 
-enum directions {
+enum directions {  //mamy 5 przypadków ruchu, bezruch, w lewo, w górę, w prawo i w dół
   dirNone,
   dirLeft,
   dirTop,
@@ -19,7 +21,7 @@ enum directions {
   dirBottom
 };
 
-enum gameState {
+enum gameState {  //mamy 5 stanów gry, menu, gra, highscores, zmiana nicku i wyjście
   stateMenu,
   statePlaying,
   stateHighScores,
@@ -27,13 +29,13 @@ enum gameState {
   stateQuit
 };
 
-int currentGameState = stateMenu;
+int currentGameState = stateMenu;  //ustawiamy na początku stan gry na menu, żeby się wyświetlało po otwarciu
 
 bool isPlaying = true;
     int highscore=0;
     char username[]="anon";
 
-WINDOW * win;
+WINDOW * win;        //parametry okna
     int height=31;
     int width=55;
     int start_x = 0;
@@ -44,18 +46,18 @@ WINDOW * win;
 int plansza(){
   
     start_color();
-    init_pair(1,COLOR_BLUE, COLOR_BLACK);
+    init_pair(1,COLOR_BLUE, COLOR_BLACK);       //ustawiamy kolor planszy na niebieski
     attron(COLOR_PAIR(1));
-
-    for(size_t j = 0; j < 31; j++) {
+ 
+    for(size_t j = 0; j < 31; j++) {           //w podwójnej pętli rysujemy planszę
       for(size_t i = 0; i < 55; i++) {
-        if(map[i][j] >= '0' && map[i][j] <= '9') {
-          printw("%s", blockTypes[(int)map[i][j] - 48]);
+        if(map[i][j] >= '0' && map[i][j] <= '9') {           //jeżeli na danym koordynacie będzie liczba od 0 do 9,
+          printw("%s", blockTypes[(int)map[i][j] - 48]);     //to wtedy drukujemy jej odpowiednik z tablicy blockTypes
         } else {
-          printw(" ");
+          printw(" ");    //w przeciwnym razie drukuj whitespace
         }
       }
-      printw("\n");
+      printw("\n");      //po każdym wierszu new line
     }
     attroff(COLOR_PAIR(1));
     return 0;
@@ -64,19 +66,20 @@ int plansza(){
 int menu()
 {
     wclear(win);
-//    erase();
     refresh();
-    box(win, 0, 0);
-//    keypad(win, true);
+    box(win, 0, 0);  //rysujemy border wokół menu
     refresh();
+
     wrefresh(win);
-    mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
+    mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");     //wypisujemy elementy menu
     mvwprintw(win, 2, 2, "Highscore: %d", highscore);
     mvwprintw(win, 3, 2, "Player: %s", username);
-    int menuy=15;
+
+    int menuy=15;    //położenie menu
     int menux=20;
-    char* options[4] = {
-      "CHANGE NICKNAME ",
+    
+    char* options[MENU_CHOICE_AMT] = {      //MENU_CHOICE_AMT jest #defined jako 4, przyda się to później przy
+      "CHANGE NICKNAME ",                   //przeklikiwaniu przez opcje w menu
       "PLAY ",
       "HIGH SCORES ",
       "QUIT "
@@ -91,41 +94,42 @@ int menu()
       stateQuit
     };
 
-    bool isPicking = true;
+    bool isPicking = true;    //zmienna oznaczająca że wybieramy coś z menu
 
     int c;
     move(menuy, menux-1);
-    while(isPicking){
-        for(size_t i = 0; i < 4; i++) {
-          if(i == currentChoice) { 
-            wattron(win, A_STANDOUT);
-            mvwprintw(win, menuy + i, menux, "%s", options[i]);
+    while(isPicking){       //wszystko związane z wypisywaniem wyborów jest w pętli
+        for(size_t i = 0; i < MENU_CHOICE_AMT; i++) {       //wypisujemy opcje z tablicy menu options
+          if(i == currentChoice) {       //jeżeli coś jest obecnie wybierane 
+            wattron(win, A_STANDOUT);     //to podświetlamy
+            mvwprintw(win, menuy + i, menux, "%s", options[i]);  //okno, wypisz w takim y (po kolei coraz niżej), takim x, takiego stringa z takiej tablicy
             wattroff(win, A_STANDOUT);
-          } else
-            mvwprintw(win, menuy + i, menux, "%s", options[i]);
+          } else  
+            mvwprintw(win, menuy + i, menux, "%s", options[i]);  //reszta się wypisuje normalnie
         }
 
         c=wgetch(win);
         switch (c)
         {
         case KEY_UP:
-            if(currentChoice == 0)
-              currentChoice += (4 - 1);
+            if(currentChoice == 0)     //jeżeli chcemy przejść w górę (KEY_UP) a jesteśmy już na najwyższym (pierwszym) stringu to przejdź na koniec, 
+              currentChoice = MENU_CHOICE_AMT - 1;  //a jak nie jesteśmy jeszcze na górze to przejdź do góry o jeden
             else
               currentChoice--;
             break;
         case KEY_DOWN:
-            if(currentChoice == (4 - 1))
-              currentChoice -= (4 - 1);
+            if(currentChoice == (MENU_CHOICE_AMT - 1))  //analogicznie do key_up, sprawdza czy jesteśmy na najniższym
+              currentChoice = 0;
             else
-              currentChoice++;            
+              currentChoice++;   //jeżeli nie jesteśmy na dole to przejdź na dół o jeden         
             break;
+
         case 10: //enter
-            currentGameState = choiceResults[currentChoice];
+        currentGameState = choiceResults[currentChoice];
             isPicking = false;
             break;
         default:
-            break;
+          break;
         }
     
         wrefresh(win);
@@ -143,12 +147,12 @@ int menu()
 void mainGame() {
           int ch;
           ch = wgetch(win);
-          if(ch == 'q') {
+          if(ch == 'q') {     //po wciśnięciu q przechodzimy do menu głównego
             currentGameState = stateMenu;
           }
           switch (ch)
           {
-            case KEY_LEFT:
+            case KEY_LEFT:          //po wciśnięciu odpowiedniego klawisza, obecny kierunek nam się zmienia
               currentDir = dirLeft;
               break;
             case KEY_RIGHT:
@@ -168,12 +172,12 @@ void mainGame() {
 
           // variables for attempted moves
 
-          int attemptedX = 0;
+          int attemptedX = 0;    //zmienne pomocnicze do liczenia ruchu
           int attemptedY = 0;
 
           // sprawdzamy w jakim kierunku się poruszamy
 
-          switch(currentDir) {
+          switch(currentDir) {          //każdy z kierunków ma swoją wartość
             case dirLeft:
               attemptedX = -1;
               break;
@@ -189,11 +193,19 @@ void mainGame() {
             //do nothing if not set, it's likely the default dirNone
           }
 
-          /* sprawdzamy czy możemy się poruszać w spaces dictated by our X i Y */
+          /* sprawdzamy czy możemy się ruszyć w miejsca określone przez aktualny kierunek ruchu, 
+          (obecne) x + attemptedX wskazuje na przyszłą zamierzoną pozycję w x, analogicznie dla y
+          jeżeli kolizja w przyszłych koordynatach x i y jest różna od 0, to znaczy, że mamy do czynienia
+          ze ścianą. wtedy sprawdza, czy ściana to X (niewidzialna ściana), który
+          zawsze znajduje się tylko po bokach. jeżeli trafia na X, to najpierw sprawdza czy może
+          iść w prawo, a jeśli nie, to sprawdza czy może iść w lewo.
+          jeżeli żadna z tych opcji nie działa to zatrzymujemy movement.
+          ten sposób pozwala nam na wybranie kierunku ciągłego ruchu, zamiast poruszaniu się o jedną
+          kratkę wraz z każdym wciśnięciem klawisza. aktualizacja pozycji odbywa się w linijce z 
+          printowaniem pacmana.
+           */
           if(mapC[x + attemptedX][y + attemptedY] != 0) {
-            /*are we moving into an X'd corridor?*/
             if(mapC[x + attemptedX][y + attemptedY] == 2) {
-              /* check left and right sides of X for a corridor, if yes move there */
               if(mapC[x + attemptedX + 1][y + attemptedY] == 0) {
                 x += attemptedX + 1;
                 y += attemptedY;
@@ -206,13 +218,13 @@ void mainGame() {
               currentDir = dirNone;
             }
           } else {
-            /* MOVE */
+            /* ruch bez żadnych kolizji */
             x += attemptedX;
             y += attemptedY;
           }
 
-          /* rysowańsko */
-          init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+          /* rysowańsko */ 
+          init_pair(2, COLOR_YELLOW, COLOR_BLACK);      //nadajemy pacmanowi żółty kolor
           move(0, 0);
           plansza();
           wrefresh(win);
@@ -240,13 +252,13 @@ int main()
 
     FILE* mapFile;
 
-    if( ( mapFile = fopen("mapa.txt", "r")) == NULL) {
-      fprintf(stderr, "plik jest pusty\n");
+    if( ( mapFile = fopen("mapa.txt", "r")) == NULL) {      //otwieramy plik w którym jest napisana plansza w cyfrach
+      fprintf(stderr, "Musisz jeszcze pobrać plik z planszą i umieścić go w folderze gry!\n");
       return 1;
     }
     for(size_t i = 0; i < 55; i++) {
       for(size_t j = 0; j < 31; j++) {
-        map[i][j] = ' ';
+        map[i][j] = ' ';    //rysujemy na razie pustą mape kolizji
       }
     }
 
@@ -256,15 +268,15 @@ int main()
 
     char c = getc(mapFile);
 
-    while( c != EOF ) {
+    while( c != EOF ) {        //ustalamy dla całego pliku czy dany znak jest ścianą czy nie
       if(c == '\n') {
-        readX = 0;
+        readX = 0;      //0 oznacza brak ściany = można się ruszać
         readY++;
       } else {  
         if((c >= '0' && c <= '9')) {
-          mapC[readX][readY] = 1;
+          mapC[readX][readY] = 1;      //1 oznacza ścianę
         } else if(c == 'X') {
-          mapC[readX][readY] = 2;
+          mapC[readX][readY] = 2;       //2 oznacza również ścianę, ale X nie ma własnego odpowiednika w tablicy blockTypes, dlatego jest niewidzialny
         }
         map[readX][readY] = c; 
         readX++;
@@ -297,9 +309,14 @@ int main()
 
     while(isPlaying) 
     {
-      clock_t prevTime = clock();  //clock_t jest z biblioteki <time.h>
+      /*
+        typ zmiennej clock_t, funkcja clock() i makro CLOCKS_PER_SEC pochodzą z biblioteki time
+        funkcja clock() zwraca czas procesorowy programu, który z dobrym
+        przybliżeniem określa całkowity rzeczywisty czas działania programu
+      */
+      clock_t prevTime = clock();
 
-      switch(currentGameState) {
+      switch(currentGameState) {         //tutaj mamy switcha który nam łatwo przeskakuje na różne stany gry
         case stateMenu:
           menu();
           break;
@@ -311,15 +328,25 @@ int main()
           break;
         }
 
-        /* czekamy aż max będzie dana amount of fps*/
+        /*
+          czekamy aż max będzie dany amount of fps
+          pętla rozpoczyna się od zebrania aktualnego czasu procesorowego
+          kolejnym krokiem jest znalezienie upływu (różnicy) czasu, przy czym
+          dzielenie przez CLOCKS_PER_SEC służy do zamiany jednostki czasu na sekundy
+          upływ czasu jest następnie porównywany z czasem potrzebym na wyświetlenie
+          pojedynczej klatki (dla częstotliwości f upływ czasu na pojedyncze zdarzenie
+          wynosi 1/f)
+          w momencie, w którym upłynie wystarczająco dużo czasu warunek if zostaje spełniony,
+          więc kod dochodzi do break i opuszcza pętlę czekającą pozwalając na refresh
+        */
         while(true) {
-          clock_t curTime = clock();
+          clock_t curTime = clock();  
           if( ( (double)curTime-(double)prevTime)/CLOCKS_PER_SEC > (1.0/desiredFPS))
-            break; //liczenie klatek na sekunde
+            break;
         }
         refresh(); //refresh screen to match the memory
     }
-
+        fclose(mapFile);
 //ඞ
     endwin(); //zamknij ncurses  
     return 0;
