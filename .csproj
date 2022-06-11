@@ -4,7 +4,6 @@
     <OutputPath>R:\VisualStudioBuilds\$(AssemblyName)\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Allegro" Version="5.2.7.1"/>
     <PackageReference Include="NCurses" Version="1.2.0"/>
   </ItemGroup>
 </Project>
