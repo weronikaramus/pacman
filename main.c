@@ -63,6 +63,25 @@ int plansza(){
     return 0;
 }
 
+int changeName(){
+  wclear(win);
+//    erase();
+    refresh();
+    box(win, 0, 0);
+//    keypad(win, true);
+    refresh();
+    wrefresh(win);
+    mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
+    mvwprintw(win, (height/2)-2, 20, "WRITE YOUR NAME:");
+    move((height/2), 20);
+    echo();
+    wgetstr(win, username);
+
+    wrefresh(win);
+    return 0;
+
+}
+
 int menu()
 {
     wclear(win);
@@ -79,8 +98,8 @@ int menu()
     int menux=20;
     
     char* options[MENU_CHOICE_AMT] = {      //MENU_CHOICE_AMT jest #defined jako 4, przyda się to później przy
-      "CHANGE NICKNAME ",                   //przeklikiwaniu przez opcje w menu
       "PLAY ",
+      "CHANGE NICKNAME ",                   //przeklikiwaniu przez opcje w menu
       "HIGH SCORES ",
       "QUIT "
     };
@@ -88,8 +107,8 @@ int menu()
     int currentChoice = 0;
 
     int choiceResults[] = {
-      stateChangeName,
       statePlaying,
+      stateChangeName,
       stateHighScores,
       stateQuit
     };
@@ -322,6 +341,9 @@ int main()
           break;
         case statePlaying:
           mainGame();
+          break;
+          case stateChangeName:
+            changeName();
           break;
         case stateQuit:
           isPlaying = false;
