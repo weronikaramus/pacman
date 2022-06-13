@@ -7,6 +7,7 @@
 
     char map[55][31]; //ustawiamy rozmiar planszy
     int mapC[55][31] = { 0 };  //ustawiamy rozmiar planszy z kolizjami
+    char mapG[55][31];
 
 char* blockTypes[] = {"-",  "║", "═", "╚", "╗", "╝", "╔", "╣", "╠", "╦"};
 
@@ -42,6 +43,49 @@ WINDOW * win;        //parametry okna
     int start_y=0;
     int x = 27;
     int y= 23;
+
+typedef struct Duszek_s {
+    int x;
+    int y;
+    int attemptedX;
+    int attemptedY;
+    short kolor;
+    int dir;
+    int dirInit;
+    int wait;
+  } Duszek;
+
+Duszek red = {
+        .x = 23,
+        .y = 14,
+        .kolor = COLOR_RED,
+        .dir = dirNone,
+        .dirInit = dirRight,
+        .wait = 1};
+
+Duszek green = {
+        .x = 19,
+        .y = 19,
+        .kolor = COLOR_GREEN,
+        .dir = dirNone,
+        .dirInit = dirTop,
+        .wait = 2};
+
+Duszek cyan = {
+        .x = 21,
+        .y = 21,
+        .kolor = COLOR_CYAN,
+        .dir = dirNone,
+        .dirInit = dirTop,
+        .wait = 3};
+
+Duszek magenta = {
+        .x = 18,
+        .y = 18,
+        .kolor = COLOR_MAGENTA,
+        .dir = dirNone,
+        .dirInit = dirTop,
+        .wait = 4};
 
 int plansza(){
   
@@ -202,6 +246,7 @@ int changeName(){
   return 0;
 }
 
+
 void mainGame() {
           int ch;
           ch = wgetch(win);
@@ -299,12 +344,12 @@ void mainGame() {
           plansza();
           wrefresh(win);
           wattron(win, COLOR_PAIR(3));
-          mvwprintw(win, y, x, "●"); //ᗣ?
+          mvwprintw(win, y, x, "●"); //ඞ?
           wattroff(win, COLOR_PAIR(3));
           wmove(win,y,x);
 
 
-          /* Portal */
+          /* Portal ඞ*/
           if (y==14){
             if (x<=0){
             x = 55-x;
@@ -313,6 +358,116 @@ void mainGame() {
             }
           }
 
+          /*Duszki logika ඞ*/ 
+
+          if(red.wait == 0){
+            red.dir = red.dirInit;
+          }
+          red.wait--;
+
+        switch(red.dir) {          //każdy z kierunków ma swoją wartość
+            case dirLeft:
+              red.attemptedX = -1;
+              break;
+            case dirRight:
+              red.attemptedX = 1;
+              break;
+            case dirTop:
+              red.attemptedY = -1;
+              break;
+            case dirBottom:
+              red.attemptedY = 1;
+              break;
+        }
+
+
+      if(mapG[i][j] == 'O'){
+        red.x += red.attemptedX;
+        red.y += red.attemptedY; 
+      } else if(mapG[i][j] == 'Q'){
+        if(red.dir == dirLeft){
+          red.y++;
+          red.dir = dirBottom;
+        } else {
+          red.x++;
+          red.dir = dirRight;
+        }
+      }else if(mapG[i][j] == 'W'){
+        if(red.dir == dirLeft){
+          red.y--;
+          red.dir = dirTop;
+        } else {
+          red.x++;
+          red.dir = dirRight;
+        }
+
+      }else if(mapG[i][j] == 'E'){
+        if(red.dir == dirRight){
+          red.y++;
+          red.dir = dirBottom;
+        } else {
+          red.x--;
+          red.dir = dirLeft;
+        }
+        
+      }else if(mapG[i][j] == 'R'){
+        if(red.dir == dirLeft){
+          red.y--;
+          red.dir = dirTop;
+        } else {
+          red.x--;
+          red.dir = dirLeft;
+        }
+
+      }else if(mapG[i][j] == 'T'){
+        if(red.dir == dirRight){
+          red.y++;
+          red.dir = dirBottom;
+        } else if{
+          red.x--;
+          red.dir = dirLeft;
+        }
+        
+      }else if(mapG[i][j] == 'Y'){
+
+      }else if(mapG[i][j] == 'U'){
+        
+      }else if(mapG[i][j] == 'I'){
+
+      }else if(mapG[i][j] == 'P'){
+        
+      }else if(mapG[i][j] == 'L'){
+
+      }
+
+
+
+
+
+          init_pair(4, red.kolor, COLOR_BLACK); 
+          wrefresh(win);
+          wattron(win, COLOR_PAIR(4));
+          mvwprintw(win, red.y, red.x, "ඞ"); //ඞ?
+          wattroff(win, COLOR_PAIR(4));
+          wmove(win,red.y,red.x);
+
+        
+
+
+/* mapa literki for future reference
+Q - right or down
+W - right or top
+E - left or down
+R - left or top
+
+T - not right
+Y - not left
+U - not bottom
+I - not top
+
+P - all
+L - teleport
+*/
 }
 
 int main()
@@ -332,12 +487,40 @@ int main()
       }
     }
 
-    int punkty = 0;
+    FILE* ghostFile;
+
+    if((ghostFile = fopen("ghostmap.txt", "r")) == NULL){
+      fprintf(stderr, "Musisz jeszcze pobrać plik dla duszków i umieścić go w folderze gry!\n");
+      return 1;
+    }
+    for(size_t i = 0; i < 55; i++) {
+      for(size_t j = 0; j < 31; j++) {
+        mapG[i][j] = ' ';
+      }
+    }
+
+    char c = getc(ghostFile);
 
     size_t readX = 0;
     size_t readY = 0;
 
-    char c = getc(mapFile);
+    while( c != EOF ) {        
+      if(c == '\n') {
+        readX = 0;      
+        readY++;
+      } else {
+        mapG[readX][readY] = c; 
+        readX++;
+      }
+      c = getc(ghostFile);
+    }
+
+    int punkty = 0;
+
+    c = getc(mapFile);
+
+    readX = 0;
+    readY = 0;
 
     while( c != EOF ) {        //ustalamy dla całego pliku czy dany znak jest ścianą czy nie
       if(c == '\n') {
