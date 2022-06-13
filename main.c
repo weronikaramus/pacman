@@ -3,8 +3,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <wchar.h>
-
 #define MENU_CHOICE_AMT 4
+
 
     char map[55][31]; //ustawiamy rozmiar planszy
     int mapC[55][31] = { 0 };  //ustawiamy rozmiar planszy z kolizjami
@@ -229,7 +229,7 @@ void mainGame() {
           }
 
           /* cały movement */
-
+           
           // variables for attempted moves
 
           int attemptedX = 0;    //zmienne pomocnicze do liczenia ruchu
@@ -264,6 +264,14 @@ void mainGame() {
           kratkę wraz z każdym wciśnięciem klawisza. aktualizacja pozycji odbywa się w linijce z 
           printowaniem pacmana.
            */
+           if(mapC[x + attemptedX][y + attemptedY] == 3){
+                  x+= attemptedX;
+                  y+= attemptedY;
+                  map[x][y] = ' ';
+                  mapC[x][y] = 0;
+                  //punkty += 100;
+              
+              } else
           if(mapC[x + attemptedX][y + attemptedY] != 0) {
             if(mapC[x + attemptedX][y + attemptedY] == 2) {
               if(mapC[x + attemptedX + 1][y + attemptedY] == 0) {
@@ -273,7 +281,7 @@ void mainGame() {
                 x += attemptedX - 1;
                 y += attemptedY;
               }
-            } else {
+            } else{
               /* halt, abort, nie wolno sie ruszać!!!!!!!!!! */
               currentDir = dirNone;
             }
@@ -322,6 +330,7 @@ int main()
       }
     }
 
+    int punkty = 0;
 
     size_t readX = 0;
     size_t readY = 0;
@@ -337,6 +346,8 @@ int main()
           mapC[readX][readY] = 1;      //1 oznacza ścianę
         } else if(c == 'X') {
           mapC[readX][readY] = 2;       //2 oznacza również ścianę, ale X nie ma własnego odpowiednika w tablicy blockTypes, dlatego jest niewidzialny
+        } else if(c == 'Y'){
+          mapC[readX][readY] = 3;
         }
         map[readX][readY] = c; 
         readX++;
