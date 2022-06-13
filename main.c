@@ -33,7 +33,8 @@ int currentGameState = stateMenu;  //ustawiamy na początku stan gry na menu, ż
 
 bool isPlaying = true;
     int highscore=0;
-    char username[]="anon";
+    int nameLength = 15;
+    char username[15]="anon";
 
 WINDOW * win;        //parametry okna
     int height=31;
@@ -46,39 +47,79 @@ WINDOW * win;        //parametry okna
 int plansza(){
   
     start_color();
-    init_pair(1,COLOR_BLUE, COLOR_BLACK);       //ustawiamy kolor planszy na niebieski
-    attron(COLOR_PAIR(1));
+    init_pair(1,COLOR_BLUE, COLOR_BLACK);  
+    init_pair(2,COLOR_WHITE, COLOR_BLACK);       //ustawiamy kolor planszy na niebieski
+    
  
     for(size_t j = 0; j < 31; j++) {           //w podwójnej pętli rysujemy planszę
       for(size_t i = 0; i < 55; i++) {
         if(map[i][j] >= '0' && map[i][j] <= '9') {           //jeżeli na danym koordynacie będzie liczba od 0 do 9,
-          printw("%s", blockTypes[(int)map[i][j] - 48]);     //to wtedy drukujemy jej odpowiednik z tablicy blockTypes
-        } else {
-          printw(" ");    //w przeciwnym razie drukuj whitespace
-        }
+          attron(COLOR_PAIR(1));
+          printw("%s", blockTypes[(int)map[i][j] - 48]); 
+          attroff(COLOR_PAIR(1));    //to wtedy drukujemy jej odpowiednik z tablicy blockTypes
+        } else if(map[i][j] == 'Y'){
+            attron(COLOR_PAIR(2));
+            printw("*");
+            attroff(COLOR_PAIR(2));
+          }else{
+            attron(COLOR_PAIR(1));
+            printw(" ");
+            attroff(COLOR_PAIR(1));    //w przeciwnym razie drukuj whitespace
+          }
       }
       printw("\n");      //po każdym wierszu new line
     }
-    attroff(COLOR_PAIR(1));
+    
     return 0;
 }
 
 int changeName(){
   wclear(win);
 //    erase();
-    refresh();
+    //refresh();
     box(win, 0, 0);
 //    keypad(win, true);
     refresh();
-    wrefresh(win);
+    cbreak();
     mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
     mvwprintw(win, (height/2)-2, 20, "WRITE YOUR NAME:");
-    move((height/2), 20);
+    move((height/2-1), 20);
     echo();
+    curs_set(1);
+
     wgetstr(win, username);
 
+    for (int i=0; i<15; i++){
+      username[i] = getch();
+      if (username[i] == '\n' || username[i] == ' ') {
+          break;
+      } else if (getch() == KEY_BACKSPACE){
+        //i--;
+          delch();
+      }
+      i++;
+    }
+    curs_set(0);
     wrefresh(win);
     return 0;
+
+
+//     char* nameTemp = new char[160];
+// int i = 0;
+// // don't put anything in the last index, to ensure a properly ended string
+// while (i < 159) {
+//     nameTemp[i] = getch();
+//     if (nameTemp[i] == '\n') {
+//         break;
+//     } else if (nameTemp[i] == '\b') {
+//         nameTemp[i] = 0;
+//         i--;
+//         nameTemp[i] = 0;
+//         i--; // cancel out the increment at end of loop
+//     }
+//     i++;
+// }
+// nameTemp[i] = 0;
 
 }
 
@@ -243,13 +284,13 @@ void mainGame() {
           }
 
           /* rysowańsko */ 
-          init_pair(2, COLOR_YELLOW, COLOR_BLACK);      //nadajemy pacmanowi żółty kolor
+          init_pair(3, COLOR_YELLOW, COLOR_BLACK);      //nadajemy pacmanowi żółty kolor
           move(0, 0);
           plansza();
           wrefresh(win);
-          wattron(win, COLOR_PAIR(2));
+          wattron(win, COLOR_PAIR(3));
           mvwprintw(win, y, x, "●"); //ᗣ?
-          wattroff(win, COLOR_PAIR(2));
+          wattroff(win, COLOR_PAIR(3));
           wmove(win,y,x);
 
 
