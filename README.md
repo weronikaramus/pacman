@@ -6,7 +6,7 @@ Instalacja ncurses
 
 By gra poprawnie działała, musimy upewnić się, że biblioteka ncurses jest zainstalowana na naszym komputerze - informacje jak to zrobić dostępne <a href="https://invisible-island.net/ncurses/#downloads">tutaj</a>.
 
-Pobieramy paczkę z grą, w folderze uruchamiamy terminal i wpisujemy komendę:
+Pobieramy paczkę z grą (Code -> Download ZIP), w folderze uruchamiamy terminal i wpisujemy komendę:
 
 $ gcc main.c -lncursesw
 
