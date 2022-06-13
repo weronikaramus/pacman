@@ -5,7 +5,6 @@
 #include <wchar.h>
 #define MENU_CHOICE_AMT 4
 
-
     char map[55][31]; //ustawiamy rozmiar planszy
     int mapC[55][31] = { 0 };  //ustawiamy rozmiar planszy z kolizjami
 
@@ -33,8 +32,8 @@ int currentGameState = stateMenu;  //ustawiamy na początku stan gry na menu, ż
 
 bool isPlaying = true;
     int highscore=0;
-    int nameLength = 15;
-    char username[15]="anon";
+    int score = 0;
+    char username[16];
 
 WINDOW * win;        //parametry okna
     int height=31;
@@ -59,7 +58,11 @@ int plansza(){
           attroff(COLOR_PAIR(1));    //to wtedy drukujemy jej odpowiednik z tablicy blockTypes
         } else if(map[i][j] == 'Y'){
             attron(COLOR_PAIR(2));
-            printw("*");
+            printw(".");
+            attroff(COLOR_PAIR(2));
+          }else if(map[i][j] == 'Z'){
+            attron(COLOR_PAIR(2));
+            printw("★");
             attroff(COLOR_PAIR(2));
           }else{
             attron(COLOR_PAIR(1));
@@ -69,58 +72,7 @@ int plansza(){
       }
       printw("\n");      //po każdym wierszu new line
     }
-    
     return 0;
-}
-
-int changeName(){
-  wclear(win);
-//    erase();
-    //refresh();
-    box(win, 0, 0);
-//    keypad(win, true);
-    refresh();
-    cbreak();
-    mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
-    mvwprintw(win, (height/2)-2, 20, "WRITE YOUR NAME:");
-    move((height/2-1), 20);
-    echo();
-    curs_set(1);
-
-    wgetstr(win, username);
-
-    for (int i=0; i<15; i++){
-      username[i] = getch();
-      if (username[i] == '\n' || username[i] == ' ') {
-          break;
-      } else if (getch() == KEY_BACKSPACE){
-        //i--;
-          delch();
-      }
-      i++;
-    }
-    curs_set(0);
-    wrefresh(win);
-    return 0;
-
-
-//     char* nameTemp = new char[160];
-// int i = 0;
-// // don't put anything in the last index, to ensure a properly ended string
-// while (i < 159) {
-//     nameTemp[i] = getch();
-//     if (nameTemp[i] == '\n') {
-//         break;
-//     } else if (nameTemp[i] == '\b') {
-//         nameTemp[i] = 0;
-//         i--;
-//         nameTemp[i] = 0;
-//         i--; // cancel out the increment at end of loop
-//     }
-//     i++;
-// }
-// nameTemp[i] = 0;
-
 }
 
 int menu()
@@ -129,13 +81,19 @@ int menu()
     refresh();
     box(win, 0, 0);  //rysujemy border wokół menu
     refresh();
-
-    wrefresh(win);
+    
+    start_color();
+    wattron(win, COLOR_PAIR(2));
+    if (score>highscore){
+      highscore = score;
+    }
+    
     mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");     //wypisujemy elementy menu
     mvwprintw(win, 2, 2, "Highscore: %d", highscore);
     mvwprintw(win, 3, 2, "Player: %s", username);
+    wrefresh(win);
 
-    int menuy=15;    //położenie menu
+    int menuy=(height/2)-2;    //położenie menu
     int menux=20;
     
     char* options[MENU_CHOICE_AMT] = {      //MENU_CHOICE_AMT jest #defined jako 4, przyda się to później przy
@@ -191,7 +149,7 @@ int menu()
         default:
           break;
         }
-    
+    wattroff(win, COLOR_PAIR(2));
         wrefresh(win);
     }
 
@@ -204,10 +162,50 @@ int menu()
 }
       int currentDir = dirNone;
 
+int changeName(){
+  start_color();
+  
+  wclear(win);
+  box(win, 0, 0);
+  refresh();
+  cbreak();
+  mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
+  mvwprintw(win, (height/2)-2, 20, "WRITE YOUR NAME:");
+  
+  mvwprintw(win, height-4, 4, "press enter to accept");
+  mvwprintw(win, height-3, 4, "then press enter or esc to exit");
+  
+  move((height/2-1), 20);
+  echo();
+  curs_set(1); //widoczny kursor
+  wgetstr(win, username);
+  for (int i=0; i <15; i++){
+    char c = getch();
+    if((c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123)){ //poprawny nick to tylko litery i cyfry
+      username[i] = c;
+    }else if (getch() == '\n') { //enter zatwierdza nazwę
+      username[i+1]='\0';
+      noecho();
+      curs_set(0);
+      currentGameState = stateMenu;
+      break;
+    } else if(getch() == 27 || getch()==10) {     //escape || enter
+      noecho();
+      curs_set(0);
+      currentGameState = stateMenu;
+      break;
+    }
+  }
+  noecho();
+  curs_set(0);
+  wrefresh(win);
+  return 0;
+}
+
 void mainGame() {
           int ch;
           ch = wgetch(win);
-          if(ch == 'q') {     //po wciśnięciu q przechodzimy do menu głównego
+          if(ch == 27) {     //escape
             currentGameState = stateMenu;
           }
           switch (ch)
@@ -269,18 +267,22 @@ void mainGame() {
                   y+= attemptedY;
                   map[x][y] = ' ';
                   mapC[x][y] = 0;
-                  //punkty += 100;
-              
-              } else
-          if(mapC[x + attemptedX][y + attemptedY] != 0) {
-            if(mapC[x + attemptedX][y + attemptedY] == 2) {
-              if(mapC[x + attemptedX + 1][y + attemptedY] == 0) {
-                x += attemptedX + 1;
-                y += attemptedY;
-              } else if(mapC[x + attemptedX - 1][y + attemptedY] == 0) {
-                x += attemptedX - 1;
-                y += attemptedY;
-              }
+                  score += 10;
+            } else if(mapC[x + attemptedX][y + attemptedY] == 4){
+                  x+= attemptedX;
+                  y+= attemptedY;
+                  map[x][y] = ' ';
+                  mapC[x][y] = 0;
+                  score += 50;
+            } else if(mapC[x + attemptedX][y + attemptedY] != 0) {
+              if(mapC[x + attemptedX][y + attemptedY] == 2) {
+                if(mapC[x + attemptedX + 1][y + attemptedY] == 0) {
+                  x += attemptedX + 1;
+                  y += attemptedY;
+                } else if(mapC[x + attemptedX - 1][y + attemptedY] == 0) {
+                  x += attemptedX - 1;
+                  y += attemptedY;
+                }
             } else{
               /* halt, abort, nie wolno sie ruszać!!!!!!!!!! */
               currentDir = dirNone;
@@ -346,7 +348,7 @@ int main()
           mapC[readX][readY] = 1;      //1 oznacza ścianę
         } else if(c == 'X') {
           mapC[readX][readY] = 2;       //2 oznacza również ścianę, ale X nie ma własnego odpowiednika w tablicy blockTypes, dlatego jest niewidzialny
-        } else if(c == 'Y'){
+        } else if(c == 'Y' || c == 'Z'){
           mapC[readX][readY] = 3;
         }
         map[readX][readY] = c; 
@@ -394,8 +396,8 @@ int main()
         case statePlaying:
           mainGame();
           break;
-          case stateChangeName:
-            changeName();
+        case stateChangeName:
+          changeName();
           break;
         case stateQuit:
           isPlaying = false;
