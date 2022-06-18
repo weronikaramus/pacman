@@ -354,6 +354,7 @@ void mainGame() {
           mvwprintw(win, y, x, "●"); //ඞ?
           wattroff(win, COLOR_PAIR(3));
           wmove(win,y,x);
+          mvwprintw(win, 0, 2, "Score: %d", score);
 
 
           /* Portal ඞ*/
