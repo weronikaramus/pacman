@@ -220,28 +220,35 @@ int changeName(){
   mvwprintw(win, height-3, 4, "then press enter or esc to exit");
   
   move((height/2-1), 20);
-  echo();
+  noecho();
   curs_set(1); //widoczny kursor
+  for(int i=0; i<15;i++)username[i]='\0'; //usuwamy starą nazwę
   wgetstr(win, username);
   for (int i=0; i <15; i++){
-    char c = getch();
+    
+    char c = getch(); //pobieramy znak po znaku nazwę
     if((c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123)){ //poprawny nick to tylko litery i cyfry
       username[i] = c;
-    }else if (getch() == '\n') { //enter zatwierdza nazwę
+      curs_set(1);
+      printw("%c", username[i]); //drukujemy znak, jeśli jest poprawny
+    }else if (c == '\n') { //enter zatwierdza nazwę
       username[i+1]='\0';
-      noecho();
-      curs_set(0);
       currentGameState = stateMenu;
       break;
-    } else if(getch() == 27 || getch()==10) {     //escape || enter
-      noecho();
-      curs_set(0);
+    } else if(c == 27) {     //escape
       currentGameState = stateMenu;
       break;
+    }else if(c == 127) {     //backspace
+      username[i-1]=' ';
+      username[i]=' ';
+      i-=2;
     }
+    
+    
+    curs_set(0);
+    
   }
-  noecho();
-  curs_set(0);
+  
   wrefresh(win);
   return 0;
 }
