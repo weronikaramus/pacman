@@ -68,7 +68,7 @@ Duszek green = {
         .y = 19,
         .kolor = COLOR_GREEN,
         .dir = dirNone,
-        .dirInit = dirTop,
+        .dirInit = dirRight,
         .wait = 2};
 
 Duszek cyan = {
@@ -76,7 +76,7 @@ Duszek cyan = {
         .y = 21,
         .kolor = COLOR_CYAN,
         .dir = dirNone,
-        .dirInit = dirTop,
+        .dirInit = dirLeft,
         .wait = 3};
 
 Duszek magenta = {
@@ -84,7 +84,7 @@ Duszek magenta = {
         .y = 18,
         .kolor = COLOR_MAGENTA,
         .dir = dirNone,
-        .dirInit = dirTop,
+        .dirInit = dirLeft,
         .wait = 4};
 
 int plansza(){
@@ -220,35 +220,28 @@ int changeName(){
   mvwprintw(win, height-3, 4, "then press enter or esc to exit");
   
   move((height/2-1), 20);
-  noecho();
+  echo();
   curs_set(1); //widoczny kursor
-  for(int i=0; i<15;i++)username[i]='\0'; //usuwamy starą nazwę
   wgetstr(win, username);
   for (int i=0; i <15; i++){
-    
-    char c = getch(); //pobieramy znak po znaku nazwę
+    char c = getch();
     if((c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123)){ //poprawny nick to tylko litery i cyfry
       username[i] = c;
-      curs_set(1);
-      printw("%c", username[i]); //drukujemy znak, jeśli jest poprawny
-    }else if (c == '\n') { //enter zatwierdza nazwę
+    }else if (getch() == '\n') { //enter zatwierdza nazwę
       username[i+1]='\0';
+      noecho();
+      curs_set(0);
       currentGameState = stateMenu;
       break;
-    } else if(c == 27) {     //escape
+    } else if(getch() == 27 || getch()==10) {     //escape || enter
+      noecho();
+      curs_set(0);
       currentGameState = stateMenu;
       break;
-    }else if(c == 127) {     //backspace
-      username[i-1]=' ';
-      username[i]=' ';
-      i-=2;
     }
-    
-    
-    curs_set(0);
-    
   }
-  
+  noecho();
+  curs_set(0);
   wrefresh(win);
   return 0;
 }
@@ -354,7 +347,6 @@ void mainGame() {
           mvwprintw(win, y, x, "●"); //ඞ?
           wattroff(win, COLOR_PAIR(3));
           wmove(win,y,x);
-          mvwprintw(win, 0, 2, "Score: %d", score);
 
 
           /* Portal ඞ*/
@@ -389,10 +381,10 @@ void mainGame() {
         }
 
 
-      if(mapG[i][j] == 'O'){
+      if(mapG[red.y][red.x] == 'O'){
         red.x += red.attemptedX;
         red.y += red.attemptedY; 
-      } else if(mapG[i][j] == 'Q'){
+      } else if(mapG[red.y][red.x] == 'Q'){
         if(red.dir == dirLeft){
           red.y++;
           red.dir = dirBottom;
@@ -400,7 +392,7 @@ void mainGame() {
           red.x++;
           red.dir = dirRight;
         }
-      }else if(mapG[i][j] == 'W'){
+      }else if(mapG[red.y][red.x] == 'W'){
         if(red.dir == dirLeft){
           red.y--;
           red.dir = dirTop;
@@ -409,7 +401,7 @@ void mainGame() {
           red.dir = dirRight;
         }
 
-      }else if(mapG[i][j] == 'E'){
+      }else if(mapG[red.y][red.x] == 'E'){
         if(red.dir == dirRight){
           red.y++;
           red.dir = dirBottom;
@@ -418,7 +410,7 @@ void mainGame() {
           red.dir = dirLeft;
         }
         
-      }else if(mapG[i][j] == 'R'){
+      }else if(mapG[red.y][red.x] == 'R'){
         if(red.dir == dirLeft){
           red.y--;
           red.dir = dirTop;
@@ -427,40 +419,19 @@ void mainGame() {
           red.dir = dirLeft;
         }
 
-      }else if(mapG[i][j] == 'T'){
-        if(red.dir == dirRight){
-          red.y++;
-          red.dir = dirBottom;
-        } else if{
-          red.x--;
-          red.dir = dirLeft;
-        }
+      }else if(mapG[red.y][red.x] == 'T'){
         
-      }else if(mapG[i][j] == 'Y'){
+      }else if(mapG[red.y][red.x] == 'Y'){
 
-      }else if(mapG[i][j] == 'U'){
+      }else if(mapG[red.y][red.x] == 'U'){
         
-      }else if(mapG[i][j] == 'I'){
+      }else if(mapG[red.y][red.x] == 'I'){
 
-      }else if(mapG[i][j] == 'P'){
+      }else if(mapG[red.y][red.x] == 'P'){
         
-      }else if(mapG[i][j] == 'L'){
+      }else if(mapG[red.y][red.x] == 'L'){
 
       }
-
-
-
-
-
-          init_pair(4, red.kolor, COLOR_BLACK); 
-          wrefresh(win);
-          wattron(win, COLOR_PAIR(4));
-          mvwprintw(win, red.y, red.x, "ඞ"); //ඞ?
-          wattroff(win, COLOR_PAIR(4));
-          wmove(win,red.y,red.x);
-
-        
-
 
 /* mapa literki for future reference
 Q - right or down
@@ -476,6 +447,19 @@ I - not top
 P - all
 L - teleport
 */
+
+          init_pair(4, red.kolor, COLOR_BLACK); 
+          //wrefresh(win);
+          wattron(win, COLOR_PAIR(4));
+          mvwprintw(win, red.y, red.x, "ඞ"); //ඞ?
+          wattroff(win, COLOR_PAIR(4));
+          wmove(win,red.y,red.x);
+          wrefresh(win);
+
+        
+
+
+
 }
 
 int main()
