@@ -3,11 +3,10 @@
 #include <time.h>
 #include <stdio.h>
 #include <wchar.h>
-#define MENU_CHOICE_AMT 4
+#define MENU_CHOICE_AMT 3
 
     char map[55][31]; //ustawiamy rozmiar planszy
     int mapC[55][31] = { 0 };  //ustawiamy rozmiar planszy z kolizjami
-    char mapG[55][31];
 
 char* blockTypes[] = {"-",  "║", "═", "╚", "╗", "╝", "╔", "╣", "╠", "╦"};
 
@@ -21,11 +20,12 @@ enum directions {  //mamy 5 przypadków ruchu, bezruch, w lewo, w górę, w praw
   dirBottom
 };
 
-enum gameState {  //mamy 5 stanów gry, menu, gra, highscores, zmiana nicku i wyjście
+enum gameState {  //mamy 5 stanów gry, menu, gra, zmiana nicku i wyjście
   stateMenu,
   statePlaying,
-  stateHighScores,
   stateChangeName,
+  stateWin,
+  stateLose,
   stateQuit
 };
 
@@ -44,56 +44,11 @@ WINDOW * win;        //parametry okna
     int x = 27;
     int y= 23;
 
-typedef struct Duszek_s {
-    int x;
-    int y;
-    int attemptedX;
-    int attemptedY;
-    short kolor;
-    int dir;
-    int dirInit;
-    int wait;
-  } Duszek;
-
-Duszek red = {
-        .x = 23,
-        .y = 14,
-        .kolor = COLOR_RED,
-        .dir = dirNone,
-        .dirInit = dirRight,
-        .wait = 1};
-
-Duszek green = {
-        .x = 19,
-        .y = 19,
-        .kolor = COLOR_GREEN,
-        .dir = dirNone,
-        .dirInit = dirRight,
-        .wait = 2};
-
-Duszek cyan = {
-        .x = 21,
-        .y = 21,
-        .kolor = COLOR_CYAN,
-        .dir = dirNone,
-        .dirInit = dirLeft,
-        .wait = 3};
-
-Duszek magenta = {
-        .x = 18,
-        .y = 18,
-        .kolor = COLOR_MAGENTA,
-        .dir = dirNone,
-        .dirInit = dirLeft,
-        .wait = 4};
-
 int plansza(){
   
     start_color();
     init_pair(1,COLOR_BLUE, COLOR_BLACK);  
     init_pair(2,COLOR_WHITE, COLOR_BLACK);       //ustawiamy kolor planszy na niebieski
-    
- 
     for(size_t j = 0; j < 31; j++) {           //w podwójnej pętli rysujemy planszę
       for(size_t i = 0; i < 55; i++) {
         if(map[i][j] >= '0' && map[i][j] <= '9') {           //jeżeli na danym koordynacie będzie liczba od 0 do 9,
@@ -126,12 +81,13 @@ int menu()
     box(win, 0, 0);  //rysujemy border wokół menu
     refresh();
     
-    start_color();
-    wattron(win, COLOR_PAIR(2));
+    
+   
     if (score>highscore){
       highscore = score;
     }
-    
+    start_color();
+    wattron(win, COLOR_PAIR(2));
     mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");     //wypisujemy elementy menu
     mvwprintw(win, 2, 2, "Highscore: %d", highscore);
     mvwprintw(win, 3, 2, "Player: %s", username);
@@ -143,7 +99,6 @@ int menu()
     char* options[MENU_CHOICE_AMT] = {      //MENU_CHOICE_AMT jest #defined jako 4, przyda się to później przy
       "PLAY ",
       "CHANGE NICKNAME ",                   //przeklikiwaniu przez opcje w menu
-      "HIGH SCORES ",
       "QUIT "
     };
 
@@ -152,7 +107,6 @@ int menu()
     int choiceResults[] = {
       statePlaying,
       stateChangeName,
-      stateHighScores,
       stateQuit
     };
 
@@ -200,11 +154,13 @@ int menu()
 //    getch(); //wait for user's input (return int of char)
     refresh(); //refresh screen to match the memory
 
-
+    score=0;
     endwin(); //zamknij ncurses  
     return 0;
 }
       int currentDir = dirNone;
+
+
 
 int changeName(){
   start_color();
@@ -350,13 +306,14 @@ void mainGame() {
           plansza();
           wrefresh(win);
           wattron(win, COLOR_PAIR(3));
-          mvwprintw(win, y, x, "●"); //ඞ?
+          mvwprintw(win, y, x, "●"); //ᗣ?
           wattroff(win, COLOR_PAIR(3));
           wmove(win,y,x);
           mvwprintw(win, 0, 2, "Score: %d", score);
+          
 
 
-          /* Portal ඞ*/
+          /* Portal */
           if (y==14){
             if (x<=0){
             x = 55-x;
@@ -365,112 +322,42 @@ void mainGame() {
             }
           }
 
-          /*Duszki logika ඞ*/ 
-
-          if(red.wait == 0){
-            red.dir = red.dirInit;
+          /* Wygrana */
+          if (score == 2600){
+            currentGameState = stateWin;
           }
-          red.wait--;
-
-        switch(red.dir) {          //każdy z kierunków ma swoją wartość
-            case dirLeft:
-              red.attemptedX = -1;
-              break;
-            case dirRight:
-              red.attemptedX = 1;
-              break;
-            case dirTop:
-              red.attemptedY = -1;
-              break;
-            case dirBottom:
-              red.attemptedY = 1;
-              break;
-        }
-
-
-      if(mapG[red.y][red.x] == 'O'){
-        red.x += red.attemptedX;
-        red.y += red.attemptedY; 
-      } else if(mapG[red.y][red.x] == 'Q'){
-        if(red.dir == dirLeft){
-          red.y++;
-          red.dir = dirBottom;
-        } else {
-          red.x++;
-          red.dir = dirRight;
-        }
-      }else if(mapG[red.y][red.x] == 'W'){
-        if(red.dir == dirLeft){
-          red.y--;
-          red.dir = dirTop;
-        } else {
-          red.x++;
-          red.dir = dirRight;
-        }
-
-      }else if(mapG[red.y][red.x] == 'E'){
-        if(red.dir == dirRight){
-          red.y++;
-          red.dir = dirBottom;
-        } else {
-          red.x--;
-          red.dir = dirLeft;
-        }
-        
-      }else if(mapG[red.y][red.x] == 'R'){
-        if(red.dir == dirLeft){
-          red.y--;
-          red.dir = dirTop;
-        } else {
-          red.x--;
-          red.dir = dirLeft;
-        }
-
-      }else if(mapG[red.y][red.x] == 'T'){
-        
-      }else if(mapG[red.y][red.x] == 'Y'){
-
-      }else if(mapG[red.y][red.x] == 'U'){
-        
-      }else if(mapG[red.y][red.x] == 'I'){
-
-      }else if(mapG[red.y][red.x] == 'P'){
-        
-      }else if(mapG[red.y][red.x] == 'L'){
-
-      }
-
-/* mapa literki for future reference
-Q - right or down
-W - right or top
-E - left or down
-R - left or top
-
-T - not right
-Y - not left
-U - not bottom
-I - not top
-
-P - all
-L - teleport
-*/
-
-          init_pair(4, red.kolor, COLOR_BLACK); 
-          //wrefresh(win);
-          wattron(win, COLOR_PAIR(4));
-          mvwprintw(win, red.y, red.x, "ඞ"); //ඞ?
-          wattroff(win, COLOR_PAIR(4));
-          wmove(win,red.y,red.x);
-          wrefresh(win);
-
-        
-
-
 
 }
 
+int youWin(){
+  wclear(win);
+  box(win, 0, 0);
+  cbreak();
+
+  mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
+  if (score>highscore){
+    mvwprintw(win,10,17,"YOU MADE A NEW RECORD!");
+    mvwprintw(win,11,17,"%s, this is your score: %d", username, score);
+  }
+  else {
+    mvwprintw(win,10,17,"GREAT GAME!");
+    mvwprintw(win,11,17,"%s, this is your score: %d", username, score);
+  }
+
+  getch();
+  if(getch()== 10 || getch()==27){
+    menu();
+  }
+  wrefresh(win);
+
+  return 0;
+}
+
+
+
 int main()
 {
+ 
 
     //menu();
 
@@ -486,40 +373,12 @@ int main()
       }
     }
 
-    FILE* ghostFile;
-
-    if((ghostFile = fopen("ghostmap.txt", "r")) == NULL){
-      fprintf(stderr, "Musisz jeszcze pobrać plik dla duszków i umieścić go w folderze gry!\n");
-      return 1;
-    }
-    for(size_t i = 0; i < 55; i++) {
-      for(size_t j = 0; j < 31; j++) {
-        mapG[i][j] = ' ';
-      }
-    }
-
-    char c = getc(ghostFile);
+    int punkty = 0;
 
     size_t readX = 0;
     size_t readY = 0;
 
-    while( c != EOF ) {        
-      if(c == '\n') {
-        readX = 0;      
-        readY++;
-      } else {
-        mapG[readX][readY] = c; 
-        readX++;
-      }
-      c = getc(ghostFile);
-    }
-
-    int punkty = 0;
-
-    c = getc(mapFile);
-
-    readX = 0;
-    readY = 0;
+    char c = getc(mapFile);
 
     while( c != EOF ) {        //ustalamy dla całego pliku czy dany znak jest ścianą czy nie
       if(c == '\n') {
@@ -532,7 +391,7 @@ int main()
           mapC[readX][readY] = 2;       //2 oznacza również ścianę, ale X nie ma własnego odpowiednika w tablicy blockTypes, dlatego jest niewidzialny
         } else if(c == 'Y'){
           mapC[readX][readY] = 3;
-        } else if(c == 'Z'){
+        } else if ( c == 'Z'){
           mapC[readX][readY] = 4;
         }
         map[readX][readY] = c; 
@@ -575,6 +434,7 @@ int main()
 
       switch(currentGameState) {         //tutaj mamy switcha który nam łatwo przeskakuje na różne stany gry
         case stateMenu:
+          
           menu();
           break;
         case statePlaying:
@@ -583,10 +443,17 @@ int main()
         case stateChangeName:
           changeName();
           break;
+        case stateWin:
+          youWin();
+          break;
+        // case stateLose:
+        //   youLose();
+        //   break;
         case stateQuit:
           isPlaying = false;
           break;
         }
+        
 
         /*
           czekamy aż max będzie dany amount of fps
