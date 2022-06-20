@@ -530,8 +530,10 @@ int main()
           mapC[readX][readY] = 1;      //1 oznacza ścianę
         } else if(c == 'X') {
           mapC[readX][readY] = 2;       //2 oznacza również ścianę, ale X nie ma własnego odpowiednika w tablicy blockTypes, dlatego jest niewidzialny
-        } else if(c == 'Y' || c == 'Z'){
+        } else if(c == 'Y'){
           mapC[readX][readY] = 3;
+        } else if(c == 'Z'){
+          mapC[readX][readY] = 4;
         }
         map[readX][readY] = c; 
         readX++;
