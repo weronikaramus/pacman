@@ -6,15 +6,17 @@
 #include <stdlib.h>
 #define MENU_CHOICE_AMT 3
 
+/* deklaracje */
+
     char map[55][31]; //ustawiamy rozmiar planszy
     int mapC[55][31] = { 0 };  //ustawiamy rozmiar planszy z kolizjami
-    char mapG[55][31];
+    char mapG[55][31];  //ustawiamy rozmiar planszy z duszkami
 
 char* blockTypes[] = {"-",  "║", "═", "╚", "╗", "╝", "╔", "╣", "╠", "╦"};
 
 double desiredFPS = 6.0; //jeżeli gra będzie za wolna to możemy sobie zwiększyć
 
-enum directions {  //mamy 5 przypadków ruchu, bezruch, w lewo, w górę, w prawo i w dół
+enum directions {  //mamy 5 przypadków ruchu: bezruch, w lewo, w górę, w prawo i w dół
   dirNone,
   dirLeft,
   dirTop,
@@ -22,11 +24,12 @@ enum directions {  //mamy 5 przypadków ruchu, bezruch, w lewo, w górę, w praw
   dirBottom
 };
 
-enum gameState {  //mamy 5 stanów gry, menu, gra, highscores, zmiana nicku i wyjście
+enum gameState {  //mamy 6 stanów gry: menu, gra, zmiana nicku, wygrana, przegrana i wyjście
   stateMenu,
   statePlaying,
-  stateHighScores,
   stateChangeName,
+  stateWin,
+  stateLose,
   stateQuit
 };
 
@@ -35,7 +38,7 @@ int currentGameState = stateMenu;  //ustawiamy na początku stan gry na menu, ż
 bool isPlaying = true;
     int highscore=0;
     int score = 0;
-    char username[16];
+    char username[16] = "anon";
 
 WINDOW * win;        //parametry okna
     int height=31;
@@ -44,6 +47,8 @@ WINDOW * win;        //parametry okna
     int start_y=0;
     int x = 27;
     int y= 23;
+
+/* DUSZKI */
 
 typedef struct Duszek_s {
     int x;
@@ -95,19 +100,18 @@ Duszek magenta = {
 
 Duszek* duszki[] = {&red, &green, &cyan, &magenta};
 
+
+
 int plansza(){
-  
+
     start_color();
     init_pair(1,COLOR_BLUE, COLOR_BLACK);  
     init_pair(2,COLOR_WHITE, COLOR_BLACK);       //ustawiamy kolor planszy na niebieski
-    
- 
     for(size_t j = 0; j < 31; j++) {           //w podwójnej pętli rysujemy planszę
       for(size_t i = 0; i < 55; i++) {
         if((map[i][j] >= '0' && map[i][j] <= '9' )) {           //jeżeli na danym koordynacie będzie liczba od 0 do 9,
           attron(COLOR_PAIR(1));
           printw("%s", blockTypes[(int)map[i][j] - 48]); 
-//          printw("%c", mapG[i][j]); 
           attroff(COLOR_PAIR(1));    //to wtedy drukujemy jej odpowiednik z tablicy blockTypes
         } else if(map[i][j] == 'Y'){
             attron(COLOR_PAIR(2));
@@ -135,8 +139,6 @@ int menu()
     box(win, 0, 0);  //rysujemy border wokół menu
     refresh();
     
-    
-   
     if (score>highscore){
       highscore = score;
     }
@@ -150,9 +152,9 @@ int menu()
     int menuy=(height/2)-2;    //położenie menu
     int menux=20;
     
-    char* options[MENU_CHOICE_AMT] = {      //MENU_CHOICE_AMT jest #defined jako 4, przyda się to później przy
+    char* options[MENU_CHOICE_AMT] = {      //MENU_CHOICE_AMT jest #defined jako 3, przyda się to później przy przeklikiwaniu przez opcje w menu
       "PLAY ",
-      "CHANGE NICKNAME ",                   //przeklikiwaniu przez opcje w menu
+      "CHANGE NICKNAME ",
       "QUIT "
     };
 
@@ -205,14 +207,13 @@ int menu()
         wrefresh(win);
     }
 
-//    getch(); //wait for user's input (return int of char)
     refresh(); //refresh screen to match the memory
 
     score=0;
     endwin(); //zamknij ncurses  
     return 0;
 }
-      int currentDir = dirNone;
+    int currentDir = dirNone;
 
 
 
@@ -254,9 +255,8 @@ int changeName(){
       i-=2;
     }
     
-    
     curs_set(0);
-    
+  
   }
   
   wrefresh(win);
@@ -287,13 +287,12 @@ void ghostMove(Duszek* g) {
               break;
         }
 
-
       if(mapG[g->x][g->y] == 'O'){
           g->x += g->attemptedX;
           g->y += g->attemptedY; 
-        
+
       } else if(mapG[g->x][g->y] == 'Q'){
-           
+
         if(g->dir == dirLeft){
           g->y++;
           g->dir = dirBottom;
@@ -302,7 +301,7 @@ void ghostMove(Duszek* g) {
           g->dir = dirRight;
         }
       }else if(mapG[g->x][g->y] == 'W'){
-            
+
         if(g->dir == dirLeft){
           g->y--;
           g->dir = dirTop;
@@ -312,7 +311,7 @@ void ghostMove(Duszek* g) {
         }
 
       }else if(mapG[g->x][g->y] == 'E'){
-            
+
         if(g->dir == dirRight){
           g->y++;
           g->dir = dirBottom;
@@ -320,9 +319,9 @@ void ghostMove(Duszek* g) {
           g->x--;
           g->dir = dirLeft;
         }
-        
+
       }else if(mapG[g->x][g->y] == 'R'){
-            
+
         if(g->dir == dirRight){
           g->y--;
           g->dir = dirTop;
@@ -361,7 +360,7 @@ void ghostMove(Duszek* g) {
               g->y++;
             }
             break;
-            
+
         }
       }else if(mapG[g->x][g->y] == 'Y'){
         int dirr = rand() % 2;
@@ -393,7 +392,7 @@ void ghostMove(Duszek* g) {
               g->y++;
             }
             break;
-            
+
         }
 
       }else if(mapG[g->x][g->y] == 'U'){
@@ -421,8 +420,8 @@ void ghostMove(Duszek* g) {
             }
             break;
         }
-            
-       
+
+
       }else if(mapG[g->x][g->y] == 'I'){
         int dirr = rand() % 2;
         switch(g->dir) {
@@ -448,7 +447,6 @@ void ghostMove(Duszek* g) {
             }
             break;
         }
-            
 
       }else if(mapG[g->x][g->y] == 'P'){
         int dirr = rand() % 3;
@@ -526,7 +524,10 @@ L - odbijanie sie od ściany
 
 }
 
+
+
 void mainGame() {
+  
           int ch;
           ch = wgetch(win);
           if(ch == 27) {     //escape
@@ -592,18 +593,12 @@ void mainGame() {
                   map[x][y] = ' ';
                   mapC[x][y] = 0;
                   score += 10;
-                  if(score == 2600){
-                    currentGameState = stateMenu;
-                  }
             } else if(mapC[x + attemptedX][y + attemptedY] == 4){
                   x+= attemptedX;
                   y+= attemptedY;
                   map[x][y] = ' ';
                   mapC[x][y] = 0;
                   score += 50;
-                  if(score == 2600){
-                    currentGameState = stateMenu;
-                  }
             } else if(mapC[x + attemptedX][y + attemptedY] != 0) {
               if(mapC[x + attemptedX][y + attemptedY] == 2) {
                 if(mapC[x + attemptedX + 1][y + attemptedY] == 0) {
@@ -633,9 +628,10 @@ void mainGame() {
           wattroff(win, COLOR_PAIR(3));
           wmove(win,y,x);
           mvwprintw(win, 0, 2, " Score: %d ", score);
+          
 
 
-          /* Portal ඞ*/
+          /* Portal */
           if (y==14){
             if (x<=0){
             x = 55-x;
@@ -644,39 +640,91 @@ void mainGame() {
             }
           }
 
-          /*Duszki funkcjaඞ*/ 
+          /* Wygrana */
+          if (score == 2600){
+            currentGameState = stateWin;
+          }
+
+
+          /* Duszki funkcja ඞ */ 
           for(size_t i = 0; i < 4; i++) {
             ghostMove(duszki[i]);
           }
 
-        
+
           if (red.y == y && red.x == x){
-            currentGameState = stateMenu;
+            currentGameState = stateLose;
           }
           if (cyan.y == y && cyan.x == x){
-            currentGameState = stateMenu;
+            currentGameState = stateLose;
           }
           if (green.y == y && green.x == x){
-            currentGameState = stateMenu;
+            currentGameState = stateLose;
           }
           if (magenta.y == y && magenta.x == x){
-            currentGameState = stateMenu;
+            currentGameState = stateLose;
           }
-        
 
 }
 
+int youWin(){
+  wclear(win);
+  box(win, 0, 0);
+  cbreak();
+
+  mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
+  if (score>highscore){
+    mvwprintw(win,10,17,"YOU MADE A NEW RECORD!");
+    mvwprintw(win,11,17,"%s, this is your score: %d", username, score);
+  }
+  else {
+    mvwprintw(win,10,17,"GREAT GAME!");
+    mvwprintw(win,11,17,"%s, this is your score: %d", username, score);
+  }
+  mvwprintw(win, height-3, 4, "press enter or esc to go to menu");
+
+  if(getch()== 10 || getch()==27){
+    menu();
+  }
+  wrefresh(win);
+
+  return 0;
+}
+
+int youLose(){
+  wclear(win);
+  box(win, 0, 0);
+  cbreak();
+
+  mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
+  if (score>highscore){
+    mvwprintw(win,10,10,"YOU LOST, BUT YOU MADE A NEW RECORD!");
+    mvwprintw(win,12,10,"%s, this is your score: %d", username, score);
+  }
+  else {
+    mvwprintw(win,10,23,"GAME OVER!");
+    mvwprintw(win,12,12,"%s, this is your score: %d", username, score);
+  }
+  mvwprintw(win, height-3, 4, "press enter or esc to go to menu");
+  
+  if(getch()== 10 || getch()==27){
+    menu();
+  }
+  wrefresh(win);
+
+  return 0;
+}
+
+
 int main()
 {
-
-    //menu();
-
+ 
     srand(time(NULL));
 
     FILE* mapFile;
 
     if( ( mapFile = fopen("mapa.txt", "r")) == NULL) {      //otwieramy plik w którym jest napisana plansza w cyfrach
-      //fprintf(stderr, "Musisz jeszcze pobrać plik z planszą i umieścić go w folderze gry!\n");
+      fprintf(stderr, "Musisz jeszcze pobrać plik z planszą i umieścić go w folderze gry!\n");
       return 1;
     }
     for(size_t i = 0; i < 55; i++) {
@@ -713,8 +761,6 @@ int main()
       c = getc(ghostFile);
     }
 
-    int punkty = 0;
-
     c = getc(mapFile);
 
     readX = 0;
@@ -731,7 +777,7 @@ int main()
           mapC[readX][readY] = 2;       //2 oznacza również ścianę, ale X nie ma własnego odpowiednika w tablicy blockTypes, dlatego jest niewidzialny
         } else if(c == 'Y'){
           mapC[readX][readY] = 3;
-        } else if(c == 'Z'){
+        } else if ( c == 'Z'){
           mapC[readX][readY] = 4;
         }
         map[readX][readY] = c; 
@@ -749,22 +795,17 @@ int main()
     noecho(); //synchornizuj wypisywanie
     //keypad(stdscr, TRUE); //dodaj obsluge klawiszy specjalnych
 
-
     win = newwin(height, width, start_x, start_y);
     keypad(win, true);
     nodelay(win, 1);
-
-
     
     wmove(win,y,x);
     refresh();
           curs_set(0);
 
-
     for(size_t i = 0; i < 4; i++) {
       duszki[i]->color_pair = 4 + i;
     }
-
 
     while(isPlaying) 
     {
@@ -784,6 +825,12 @@ int main()
           break;
         case stateChangeName:
           changeName();
+          break;
+        case stateWin:
+          youWin();
+          break;
+        case stateLose:
+          youLose();
           break;
         case stateQuit:
           isPlaying = false;
