@@ -8,9 +8,8 @@ By gra poprawnie działała, musimy upewnić się, że biblioteka ncurses jest z
 
 Pobieramy paczkę z grą (Code -> Download ZIP), w folderze uruchamiamy terminal i wpisujemy komendę:
 
-`$ gcc main.c -lncursesw`
+`$ gcc main.c -lncursesw && ./a.out`
 
-`$ ./a.out`
 
 ## Funkcje gry
 
