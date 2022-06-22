@@ -36,7 +36,7 @@ ESC - wyjście do menu
 
 ![image](https://user-images.githubusercontent.com/43135879/175037708-36d21e2f-c522-4815-af86-ef087de86fdf.png)
 
-#### Pukntacja:
+#### Punktacja:
 
 małe owoce: +10pkt
 
