@@ -28,12 +28,15 @@ W opcji Change Nickname zmieniamy nazwę naszego gracza.
 
 
 ### Play
-Rozgrywka
+#### Rozgrywka:
+
 Sterowanie: strzałki
+
 ESC - wyjście do menu
 
 ![image](https://user-images.githubusercontent.com/43135879/175037708-36d21e2f-c522-4815-af86-ef087de86fdf.png)
 
+#### Pukntacja:
 
 małe owoce: +10pkt
 
@@ -45,8 +48,9 @@ Ale, ale! Złe Duszki mogą chcieć cię zjeść - uciekaj przed nimi!
 
 ![image](https://user-images.githubusercontent.com/43135879/175038004-af0a2a4e-731d-4def-b0b5-cf10041df613.png)
 
+
 Jeśli podczas gry żaden Duszek cię nie dopadnie wygrywasz!
 
-![image](https://user-images.githubusercontent.com/43135879/175039093-0737326e-9018-4a27-b269-377e5df9b717.png)
+![image](https://user-images.githubusercontent.com/43135879/175039944-eda811ce-1f1d-4586-a655-6728c6faa4ff.png)
 
 
