@@ -15,20 +15,16 @@ Pobieramy paczkę z grą (Code -> Download ZIP), w folderze uruchamiamy terminal
 
 ### Menu
 
-![image](https://user-images.githubusercontent.com/43135879/173416721-be97bd32-fa7b-4ff0-9c2d-e5e82385caac.png)
+![image](https://user-images.githubusercontent.com/43135879/175037411-a8562e27-8380-44ad-b03c-4bb1d7f714e1.png)
 
 Strzałkami poruszamy się po menu, nasz wybór potwierdzamy przyciskiem ENTER.
 U góry ekranu widzimy najlepszy zdobyty wynik oraz obecnego gracza.
 
 ### Change Nickname
 
-![image](https://user-images.githubusercontent.com/43135879/173417117-3b45916d-0031-41b3-ac14-8099d432798d.png)
+![image](https://user-images.githubusercontent.com/43135879/175037577-8b3ba345-2077-4c26-bcac-49c882dfa3d4.png)
 
 W opcji Change Nickname zmieniamy nazwę naszego gracza.
-
-### High Scores
-
-Tu mamy dostęp do 3 najlepszych graczy - wraz z ich rekordami.
 
 
 ### Play
@@ -36,10 +32,21 @@ Rozgrywka
 Sterowanie: strzałki
 ESC - wyjście do menu
 
+![image](https://user-images.githubusercontent.com/43135879/175037708-36d21e2f-c522-4815-af86-ef087de86fdf.png)
+
+
 małe owoce: +10pkt
 
 duże owoce: +50pkt
 
 PacMan zatrzymuje się po napotkaniu ściany - sami również możemy go w ten sposób zatrzymać, co umożliwia nowe strategie (w oryginalnej grze PacMan zatrzymuje się sam).
+
+Ale, ale! Złe Duszki mogą chcieć cię zjeść - uciekaj przed nimi!
+
+![image](https://user-images.githubusercontent.com/43135879/175038004-af0a2a4e-731d-4def-b0b5-cf10041df613.png)
+
+Jeśli podczas gry żaden Duszek cię nie dopadnie wygrywasz!
+
+![image](https://user-images.githubusercontent.com/43135879/175039093-0737326e-9018-4a27-b269-377e5df9b717.png)
 
 
