@@ -673,14 +673,10 @@ int youWin(){
   cbreak();
 
   mvwprintw(win, 0, 16, " * * * PAC - MAN * * * ");
-  if (score>highscore){
-    mvwprintw(win,10,17,"YOU MADE A NEW RECORD!");
-    mvwprintw(win,11,17,"%s, this is your score: %d", username, score);
-  }
-  else {
-    mvwprintw(win,10,17,"GREAT GAME!");
-    mvwprintw(win,11,17,"%s, this is your score: %d", username, score);
-  }
+  
+    mvwprintw(win,10,23,"YOU WON!");
+    mvwprintw(win,12,12,"%s, this is your score: %d", username, score);
+  
   mvwprintw(win, height-3, 4, "press enter or esc to go to menu");
 
   if(getch()== 10 || getch()==27){
@@ -703,7 +699,7 @@ int youLose(){
   }
   else {
     mvwprintw(win,10,23,"GAME OVER!");
-    mvwprintw(win,12,12,"%s, this is your score: %d", username, score);
+    mvwprintw(win,12,10,"%s, this is your score: %d", username, score);
   }
   mvwprintw(win, height-3, 4, "press enter or esc to go to menu");
   
